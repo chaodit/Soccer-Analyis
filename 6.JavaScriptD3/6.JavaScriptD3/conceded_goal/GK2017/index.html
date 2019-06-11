@@ -1,0 +1,188 @@
+<!-- 
+
+    Adapted from Mike Bostock at bl.ocks.org
+    https://bl.ocks.org/mbostock/4063582
+
+ -->
+
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- Custom CSS -->
+    <style>
+        svg {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            font: 10px sans-serif;
+        }
+
+        form {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            float:right;
+        }
+
+        label {
+            padding-right:10px;
+        }
+
+        input {
+            margin: 0 7px;
+        }
+        #seasonheader {
+            width: 1000px;
+            margin-top: 80px;
+            margin-left: 80px;
+            background-color: rgb(255, 255, 250);
+            opacity: 0.8;
+        }
+
+    </style>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="seasonheader">
+        <h2>Premier league: 16/17 Season GoalKeeper's Conceded Goals </h2>
+    </div>
+    <div class="row" id ="row1">
+            <div style="margin-left:100px; margin-right: 10px; margin-top: 5px; font-size: 12px;">Club Name: </div>
+            <select id= "myselect" class="myselect" style="width: 200px" onchange="initial(this)">
+                <option> Manchester United </option>
+                <option> Chelsea FC </option>
+                <option> Manchester City </option>
+                <option> Sunderland AFC </option>
+                <option> Burnley FC </option>
+                <option> AFC Bournemouth </option>
+                <option> West Bromwich Albion </option>
+                <option> Middlesbrough FC </option>
+                <option> Hull City </option>
+                <option> Watford FC </option>
+                <option> Swansea City </option>
+                <option> Leicester City </option>
+                <option> Stoke City </option>
+                <option> Southampton FC </option>
+                <option> Crystal Palace </option>
+                <option> Everton FC </option>
+                <option> West Ham United </option>
+                <option> Tottenham Hotspur </option>
+                <option> Liverpool FC </option>
+                <option> Arsenal FC </option>
+            </select>
+    </div>
+
+    <div class="container">
+        <div class="row" style="margin-top: 20px; padding-left:0px">
+            <svg width="1000" height="500"></svg>
+        </div>       
+    </div>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+
+
+
+<script>
+  
+    $("select").select2();
+
+    var svg = d3.select("svg"),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+
+    var fader = function(color) { return d3.interpolateRgb(color, "#fff")(0.3); },
+        color = d3.scaleOrdinal(d3.schemeCategory20.map(fader)),
+        
+        format = d3.format(",d");
+
+    var treemap = d3.treemap()
+        .tile(d3.treemapResquarify)
+        .size([width, height])
+        .round(true)
+        .paddingInner(1);
+    
+    function initial(){
+        //remove svg
+        var chosenData = document.getElementById("myselect");
+        var selectClub = chosenData.value
+        svg.selectAll("g").remove();
+        //redraw d3
+        d3.json("http://18.191.239.122/wordpress/wp-content/uploads/2019/05/GK2017.json", function(error, data) {
+            if (error) throw error;
+            // Since we are dealing with hierarchical data, need to convert the data to the right format
+            var nd = data.filter(function(d){
+                return d.name == selectClub});
+            console.log(nd);
+            
+            var root = d3.hierarchy(nd[0])
+            // load differ data
+                .eachBefore(function(d) { 
+                    d.data.id = (d.parent ? d.parent.data.id + "." : "") + d.data.name; })
+                .sum(sumBySize)
+                .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
+
+            // Computes x0, x1, y0, and y1 for each node (where the rectangles should be)
+            treemap(root);
+            var cell = svg.selectAll("g")
+                .data(root.leaves())
+                .enter().append("g")
+                    .attr("transform", function(d) { 
+                        return "translate(" + (d.x0*1) + "," + (d.y0*1) + ")"; });
+
+            // Add rectanges for each of the boxes that were generated
+            cell.append("rect")
+                .attr("id", function(d) { return d.data.id; })
+                .attr("width", function(d) { return (d.x1 - d.x0); })
+                .attr("height", function(d) { return (d.y1 - d.y0); })
+                .attr("fill", function(d) { return color(d.parent.data.id); });
+
+            // Make sure that text labels don't overflow into adjacent boxes
+            cell.append("clipPath")
+                .attr("id", function(d) { return "clip-" + d.data.id; })
+                .append("use")
+                    .attr("xlink:href", function(d) { return "#" + d.data.id; });
+
+            // Add text labels - each word goes on its own line
+            cell.append("text")
+                .attr("clip-path", function(d) { return "url(#clip-" + d.data.id + ")"; })
+                .selectAll("tspan")
+                .data(function(d) { d = d.data.name+ ": " +"\n"+ format(d.value) 
+                                   return d.split(/(?=[A-Z][^A-Z])/g); })
+                
+                .enter().append("tspan")
+                    .attr("x", 4)
+                    .attr("y", function(d, i) { return 20 + i * 20; })
+                    .text(function(d) { return d; })
+                    .style("font-size", "10px")
+                    .style("font-weight","bold");
+
+            // Simple way to make tooltips
+            cell.append("title")
+                .text(function(d) {
+                return d.parent.data.id + "\n" + "Total Conceded Goals: "+ format(d.value)})
+                .style("font-size", "18px")
+                .style("font-weight","bold");
+            
+
+        });
+    };
+
+    // Return the size of the node
+    function sumBySize(d) {
+        return d.size;
+    }
+    initial();
+</script>
+
+</body>

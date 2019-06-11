@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="">
+        <title>All Goals With Each Club</title>
+        <!-- Bootstrap Core CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <!-- jQuery UI CSS -->
+        <link rel="stylesheet" href="http://18.191.239.122/wordpress/wp-content/uploads/2019/06/jquery-ui.min_.css">
+        <link rel="stylesheet" href="http://18.191.239.122/wordpress/wp-content/uploads/2019/06/jquery-ui.structure.min_.css">
+        <link rel="stylesheet" href="http://18.191.239.122/wordpress/wp-content/uploads/2019/06/jquery-ui.theme_.min_.css">
+        
+        <!-- d3-tip CSS -->
+        <link rel="stylesheet" href="http://18.191.239.122/wordpress/wp-content/uploads/2019/05/d3-tip.css">
+        
+        <!-- select2 CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/css/select2.min.css" rel="stylesheet" />
+        
+        <!-- Custom CSS -->
+        <style>
+            .d3-tip {
+              line-height: 1;
+              font-weight: bold;
+              padding: 12px;
+              background: rgba(0, 0, 0, 0.8);
+              color: #fff;
+              border-radius: 2px;
+              pointer-events: none;
+            }
+
+            /* Creates a small triangle extender for the tooltip */
+            .d3-tip:after {
+              box-sizing: border-box;
+              display: inline;
+              font-size: 10px;
+              width: 100%;
+              line-height: 1;
+              color: rgba(0, 0, 0, 0.8);
+              position: absolute;
+              pointer-events: none;
+            }
+
+            /* Northward tooltips */
+            .d3-tip.n:after {
+              content: "\25BC";
+              margin: -1px 0 0 0;
+              top: 100%;
+              left: 0;
+              text-align: center;
+            }
+
+            /* Eastward tooltips */
+            .d3-tip.e:after {
+              content: "\25C0";
+              margin: -4px 0 0 0;
+              top: 50%;
+              left: -8px;
+            }
+
+            /* Southward tooltips */
+            .d3-tip.s:after {
+              content: "\25B2";
+              margin: 0 0 1px 0;
+              top: -8px;
+              left: 0;
+              text-align: center;
+            }
+
+            /* Westward tooltips */
+            .d3-tip.w:after {
+              content: "\25B6";
+              margin: -4px 0 0 -1px;
+              top: 50%;
+              left: 100%;
+            }
+
+            #chart-area svg {
+              margin-left: auto;
+              margin-right: auto;
+              display: block;
+            }
+
+            #logo {
+              height:50px;
+            }
+
+            .navbar-brand {
+              height: 60px;
+              padding: 5px 0px;
+            }
+
+            .axis {
+              font: 10px sans-serif;
+            }
+
+            .axis path,
+            .axis line {
+              fill: none;
+              stroke: #D4D8DA;
+              stroke-width: 2px;
+              shape-rendering: crispEdges;
+            }
+
+            .line {
+              fill: none;
+              stroke-width: 2px;
+            }
+
+            .overlay {
+              fill: none;
+              pointer-events: all;
+            }
+
+            .focus circle {
+              fill: #F1F3F3;
+              stroke: #777;
+              stroke-width: 3px;
+            }
+
+            .hover-line {
+              stroke: #777;
+              stroke-width: 2px;
+              stroke-dasharray: 3,3;
+            }
+
+            #selections .col-md-4 {
+              padding-top: 10px;
+              padding-bottom: 10px;
+            }
+
+        </style>
+    </head>
+
+    <body>
+
+    <!-- Bootstrap grid setup -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="selections" class="row">
+                    <div class="col-md-4">
+                        <select id="season-select" class="form-control">
+                            <option selected value="2015">Season 2015/2016</option>
+                            <option value="2016">Season 2016/2017</option>
+                            <option value="2017">Season 2017/2018</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="club-select" class="form-control">
+                            <option selected value="all">ALL</option>
+                            <option value="Tottenham Hotspur">Tottenham Hotspur</option>
+                            <option value="Manchester City">Manchester City</option>
+                            <option value="Leicester City">Leicester City</option>
+                            <option value="West Ham United">West Ham United</option>
+                            <option value="Arsenal FC">Arsenal FC</option>
+                            <option value="Liverpool FC">Liverpool FC</option>
+                            <option value="Southampton FC">Southampton FC</option>
+                            <option value="Everton FC">Everton FC</option>
+                            <option value="Chelsea FC">Chelsea FC</option>
+                            <option value="Manchester United">Manchester United</option>
+                            <option value="Sunderland AFC">Sunderland AFC</option>
+                            <option value="AFC Bournemouth">AFC Bournemouth</option>
+                            <option value="Newcastle United">Newcastle United</option>
+                            <option value="Swansea City">Swansea City</option>
+                            <option value="Norwich City">Norwich City</option>
+                            <option value="Crystal Palace">Crystal Palace</option>
+                            <option value="Stoke City">Stoke City</option>
+                            <option value="Watford FC">Watford FC</option>
+                            <option value="West Bromwich Albion">West Bromwich Albion</option>
+                            <option value="Aston Villa">Aston Villa</option>
+                            <option value="Burnley FC">Burnley FC</option>
+                            <option value="Sunderland AFC">Sunderland AFC</option>
+                            <option value="Hull City">Hull City</option>
+                            <option value="Middlesbrough FC">Middlesbrough FC</option>
+                            <option value="Brighton & Hove Albion">Brighton & Hove Albion</option>
+                            <option value="Huddersfield Town">Huddersfield Town</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div id="line-area"></div>
+                    </div> 
+                    <div class="col-md-4">
+                        <div id="club-area1"></div>
+                        <div id="club-area2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External JS libraries -->
+    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+
+    <script src="http://18.191.239.122/wordpress/wp-content/uploads/2019/05/d3.min_.js"></script>
+    <script src="http://18.191.239.122/wordpress/wp-content/uploads/2019/05/d3-tip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+
+
+    <!-- Custom JS -->
+    <script src="http://18.191.239.122/wordpress/wp-content/uploads/2019/06/goal_main.js"></script>
+    <script>
+        var a = document.getElementById("club-select");
+        function clear()
+        {
+            $("#clubselect").val().trigger('change');;
+        }
+        $("select").select2();
+    </script>
+    </body>
+</html>
